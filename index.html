@@ -1,0 +1,213 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRACKmyGOLD</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f9f9f9;
+      color: #333;
+    }
+    header {
+      background-color: #d4af37;
+      padding: 20px;
+      text-align: center;
+      color: white;
+    }
+    header h1 {
+      margin: 0;
+    }
+    nav {
+      text-align: center;
+      margin-top: 10px;
+    }
+    nav a {
+      margin: 0 15px;
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+    }
+    section {
+      padding: 30px;
+      max-width: 800px;
+      margin: auto;
+    }
+    .tracker input, .tracker button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .tracker button {
+      background-color: #d4af37;
+      color: white;
+      font-weight: bold;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border-bottom: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+    footer {
+      background-color: #333;
+      color: white;
+      text-align: center;
+      padding: 10px;
+      margin-top: 50px;
+    }
+    .dark-mode {
+      background-color: #111;
+      color: #eee;
+    }
+    .dark-mode header, .dark-mode footer {
+      background-color: #222;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>TRACKmyGOLD</h1>
+    <p>Track your gold savings, daily entries, and growth 📈</p>
+  </header>
+  <nav>
+    <a href="#about">About</a>
+    <a href="#tracker">Gold Tracker</a>
+    <a href="#contact">Contact</a>
+    <button onclick="toggleDarkMode()">🌙</button>
+  </nav>
+
+  <section id="about">
+    <h2>About Me</h2>
+    <p>Hey! I’m Aryan, an undergraduate student passionate about investing, tracking digital gold, and growing wealth the smart way. This site helps me — and maybe you — stay consistent and mindful with gold savings.</p>
+  </section>
+
+  <section id="tracker" class="tracker">
+    <h2>Gold Tracker Tool</h2>
+    <input type="date" id="date" />
+    <input type="number" id="grams" placeholder="Gold in grams (e.g. 0.0025)" step="0.0001" />
+    <input type="number" id="price" placeholder="Amount in ₹ (e.g. 500)" />
+    <button onclick="addOrUpdateEntry()">Save Entry</button>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Grams</th>
+          <th>Amount (₹)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="entryTable"></tbody>
+    </table>
+    <div class="total" id="totalGold">Total Gold: 0 gm</div>
+  </section>
+
+  <section id="contact">
+    <h2>Contact</h2>
+    <p>Follow me on Instagram: <a href="https://www.instagram.com/_aryan_cateyes___/" target="_blank">@_aryan_cateyes___</a></p>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Aryan Cateyes | Built with ❤️</p>
+  </footer>
+
+  <script>
+    let entries = JSON.parse(localStorage.getItem("goldEntries")) || [];
+    let editIndex = -1;
+
+    function saveToStorage() {
+      localStorage.setItem("goldEntries", JSON.stringify(entries));
+    }
+
+    function addOrUpdateEntry() {
+      const date = document.getElementById('date').value;
+      const grams = parseFloat(document.getElementById('grams').value);
+      const price = parseFloat(document.getElementById('price').value);
+
+      if (!date || isNaN(grams) || isNaN(price)) {
+        alert("Please enter valid data!");
+        return;
+      }
+
+      const entry = { date, grams, price };
+
+      if (editIndex === -1) {
+        entries.push(entry);
+      } else {
+        entries[editIndex] = entry;
+        editIndex = -1;
+      }
+
+      saveToStorage();
+      updateTable();
+      updateTotal();
+      clearInputs();
+    }
+
+    function updateTable() {
+      const tbody = document.getElementById("entryTable");
+      tbody.innerHTML = "";
+
+      entries.forEach((entry, index) => {
+        const row = `<tr>
+          <td>${entry.date}</td>
+          <td>${entry.grams}</td>
+          <td>₹${entry.price}</td>
+          <td>
+            <button onclick="editEntry(${index})">Edit</button>
+            <button onclick="deleteEntry(${index})">Delete</button>
+          </td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+
+    function updateTotal() {
+      const total = entries.reduce((sum, entry) => sum + entry.grams, 0);
+      document.getElementById("totalGold").innerText = `Total Gold: ${total.toFixed(4)} gm`;
+    }
+
+    function deleteEntry(index) {
+      if (confirm("Delete this entry?")) {
+        entries.splice(index, 1);
+        saveToStorage();
+        updateTable();
+        updateTotal();
+      }
+    }
+
+    function editEntry(index) {
+      const entry = entries[index];
+      document.getElementById("date").value = entry.date;
+      document.getElementById("grams").value = entry.grams;
+      document.getElementById("price").value = entry.price;
+      editIndex = index;
+    }
+
+    function clearInputs() {
+      document.getElementById("date").value = "";
+      document.getElementById("grams").value = "";
+      document.getElementById("price").value = "";
+    }
+
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark-mode");
+    }
+
+    window.onload = function () {
+      updateTable();
+      updateTotal();
+    };
+  </script>
+</body>
+</html>
